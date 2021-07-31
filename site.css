@@ -5,7 +5,8 @@ body, div, header {
 body > div > header {
     position: fixed;
     top: 0;
-    height: 8em;
+    height: 9em;
+    line-height: 1.5em;
     width: 100%;
     border-bottom: 1px solid #000;
     background-color: #fff;
@@ -13,7 +14,7 @@ body > div > header {
 }
 
 div#results {
-    margin-top: 8em;
+    margin-top: 9em;
     padding: 1em;
 }
 
