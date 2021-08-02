@@ -1,5 +1,5 @@
+import * as fflate from 'https://cdn.skypack.dev/fflate?min';
 import {attachBehaviors} from './rn.js';
-import * as fflate from 'https://cdn.skypack.dev/fflate?min'
 //console.log(SaxonJS.getProcessorInfo());
 //console.log('fflate', fflate);
 
@@ -8,11 +8,16 @@ const domParser = new DOMParser(),
     inputFiles = document.getElementById('inputFiles'),
     inputCreateZip = document.getElementById('inputCreateZip');
 
-let results = $('#results'),
+let results = document.getElementById('results'),
     xslJson = null;
 
-$.getJSON('qti2xTo30.sef.json')
-    .fail(function() {
+fetch('qti2xTo30.sef.json')
+    .then(res => res.json())
+    .then(data => {
+        xslJson = data;
+        console.log('Stylesheet read from SEF.')
+    })
+    .catch(err => {
         console.log('SEF not available. Getting XSL...');
         const loc = window.location;
         SaxonJS.getResource({
@@ -27,17 +32,13 @@ $.getJSON('qti2xTo30.sef.json')
             console.log('Error getting XSL resource.', err);
             alert('No XSL available!')
         });
-    })
-    .done(function(data) {
-        console.log('Stylesheet read from SEF.')
-        xslJson = data;
     });
 
 function transform(doc) {
     return SaxonJS.transform({
             stylesheetInternal: xslJson,
             sourceNode: doc,
-            destination: 'document'
+            destination: 'serialized'
         }, 'async')
         .then (output => {
             return output.principalResult;
@@ -78,14 +79,16 @@ function zipFiles(values) {
 }
 
 function processFiles() {
-    results.empty();
+    results.innerHTML = '';
     let promises = [];
     for (var i = 0; i < inputFiles.files.length; i++) {
         let file = inputFiles.files[i],
-            result = $(document.createElement('div')),
-            pre = $(document.createElement('pre'));
+            result = document.createElement('div'),
+            h2 = document.createElement('h2'),
+            pre = document.createElement('pre');
         console.log('Processing file: ', file.name);
-        result.append('<h2>' + file.name + '</h2>', pre);
+        h2.append(file.name);
+        result.append(h2, pre);
         results.append(result);
         promises.push(
             file.text()
@@ -93,18 +96,17 @@ function processFiles() {
                     let doc = domParser.parseFromString(txt, 'text/xml'),
                         errCount = doc.getElementsByTagName('parsererror').length
                     if (errCount !== 0) {
-                        result.addClass('parsererror');
+                        result.classList.add('parsererror');
                         return doc;
                     }
                     else
                         return transform(doc);
                 })
                 .then(transformed => {
-                    const serialized = xmlSerializer.serializeToString(transformed);
-                    pre.text(serialized);
+                    pre.innerText = transformed;
                     return {
                         filename: file.name,
-                        result: serialized
+                        result: transformed
                     };
                 })
         );
@@ -115,7 +117,7 @@ function processFiles() {
 
 attachBehaviors({
     'form#uploadForm': function(idx, elm) {
-        $(elm).submit(function(evt) {
+        elm.addEventListener('submit', function(evt) {
             evt.preventDefault();
             processFiles();
         });

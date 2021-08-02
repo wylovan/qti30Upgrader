@@ -26,12 +26,25 @@
           in qti-content-body.
 
 -->
-<xsl:stylesheet xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:math="http://www.w3.org/2005/xpath-functions/math" xmlns:apip="http://www.imsglobal.org/xsd/apip/apipv1p0/imsapip_qtiv1p0" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:mml3="http://www.w3.org/2010/Math/MathML" xmlns:imx="http://ets.org/imex"
+<xsl:stylesheet xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:math="http://www.w3.org/2005/xpath-functions/math" xmlns:apip="http://www.imsglobal.org/xsd/apip/apipv1p0/imsapip_qtiv1p0"
+    xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:mml3="http://www.w3.org/2010/Math/MathML" xmlns:imx="http://ets.org/imex"
     exclude-result-prefixes="apip imx math mml mml3 xi xs" version="3.0">
 
     <xsl:variable name="qti3NamespaceUri" select="'http://www.imsglobal.org/xsd/imsqtiasi_v3p0'"/>
     <xsl:variable name="qti3RptemplatesUri" select="'https://purl.imsglobal.org/spec/qti/v3p0/rptemplates/'"/>
     <xsl:variable name="mmlNamespaceUri" select="'http://www.w3.org/1998/Math/MathML'"/>
+
+    <!-- Associate Schematron... -->
+    <xsl:template match="/">
+        <xsl:processing-instruction name="xml-model">href="https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0_v1p0.xsd" type="application/xml" schematypens="http://purl.oclc.org/dsdl/schematron"</xsl:processing-instruction>
+    </xsl:template>
+
+    <!-- Copy comments and processing-instructions... -->
+    <xsl:template match="comment() | processing-instruction()">
+        <xsl:copy/>
+    </xsl:template>
 
     <!-- Unidentified elements just get the namespace switched... -->
     <xsl:template match="*">
@@ -42,7 +55,8 @@
 
     <!-- Attribute names (except @aria-* and @data-*) get kabobized... -->
     <xsl:template match="@*">
-        <xsl:attribute name="{if (matches(name(), '^(aria|data)-')) then name() else imx:kabobize(name(), '')}" namespace="{namespace-uri()}" select="string()"/>
+        <xsl:attribute name="{if (matches(name(), '^(aria|data)-')) then name() else imx:kabobize(name(), '')}" namespace="{namespace-uri()}"
+            select="string()"/>
     </xsl:template>
 
     <!-- QTI specific element names get qti-kabobified... -->
@@ -58,9 +72,9 @@
 
     <!-- Inject Schematron association PI and schemaLocation... -->
     <xsl:template match="*:assessmentItem | *:assessmentStimulus">
-        <xsl:processing-instruction name="xml-model">href="https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0_v1p0.xsd" type="application/xml" schematypens="http://purl.oclc.org/dsdl/schematron"</xsl:processing-instruction>
         <xsl:element name="{imx:qti-kabobify(name())}" namespace="{$qti3NamespaceUri}">
-            <xsl:attribute name="xsi:schemaLocation" select="'http://www.imsglobal.org/xsd/imsqtiasi_v3p0 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0_v1p0.xsd'"/>
+            <xsl:attribute name="xsi:schemaLocation"
+                select="'http://www.imsglobal.org/xsd/imsqtiasi_v3p0 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0_v1p0.xsd'"/>
             <xsl:apply-templates select="@* except @xsi:schemaLocation | node()"/>
         </xsl:element>
     </xsl:template>
