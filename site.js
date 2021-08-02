@@ -1,9 +1,7 @@
-//import * as $ from 'https://cdn.skypack.dev/jquery';
 import * as fflate from 'https://cdn.skypack.dev/fflate?min';
 import {attachBehaviors} from './rn.js';
 //console.log(SaxonJS.getProcessorInfo());
 //console.log('fflate', fflate);
-//console.log('$:', $);
 
 const domParser = new DOMParser(),
     xmlSerializer = new XMLSerializer(),
