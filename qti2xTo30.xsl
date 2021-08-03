@@ -39,6 +39,7 @@
     <!-- Associate Schematron... -->
     <xsl:template match="/">
         <xsl:processing-instruction name="xml-model">href="https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0_v1p0.xsd" type="application/xml" schematypens="http://purl.oclc.org/dsdl/schematron"</xsl:processing-instruction>
+        <xsl:apply-templates/>
     </xsl:template>
 
     <!-- Copy comments and processing-instructions... -->
