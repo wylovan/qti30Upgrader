@@ -18,6 +18,6 @@ div#results {
     padding: 1em;
 }
 
-.parsererror, .transformerror {
+.transformerror {
     color: red;
 }
