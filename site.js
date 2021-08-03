@@ -1,3 +1,7 @@
+/* 
+ * site.js
+ */
+
 import * as fflate from 'https://cdn.skypack.dev/fflate?min';
 import {attachBehaviors} from './rn.js';
 //console.log(SaxonJS.getProcessorInfo());
@@ -6,6 +10,7 @@ import {attachBehaviors} from './rn.js';
 const domParser = new DOMParser(),
     xmlSerializer = new XMLSerializer(),
     inputFiles = document.getElementById('inputFiles'),
+    inputShowInPage = document.getElementById('inputShowInPage'),
     inputCreateZip = document.getElementById('inputCreateZip');
 
 let results = document.getElementById('results'),
@@ -34,10 +39,10 @@ fetch('qti2xTo30.sef.json')
         });
     });
 
-function transform(doc) {
+function transform(txt) {
     return SaxonJS.transform({
             stylesheetInternal: xslJson,
-            sourceNode: doc,
+            sourceText: txt,
             destination: 'serialized'
         }, 'async')
         .then (output => {
@@ -45,7 +50,23 @@ function transform(doc) {
         })
         .catch(err => {
             console.log('ERROR:', err);
+            return txt;
         });
+}
+
+function showInPage(fileName, content) {
+    let result = document.createElement('div'),
+        h2 = document.createElement('h2'),
+        pre = document.createElement('pre');
+    h2.append(fileName);
+    if (content.code) {
+        result.classList.add('transformerror');
+        pre.append(content.code + ': ' + content.message);
+    }
+    else
+        pre.append(content);
+    result.append(h2, pre);
+    results.append(result);
 }
 
 function zipFiles(values) {
@@ -69,10 +90,12 @@ function zipFiles(values) {
     }
 
     values.forEach((v, i) => {
-        const val = fflate.strToU8(v.result),
-            defl = new fflate.AsyncZipDeflate(v.filename, { level: 9 });
-        zipFile.add(defl);
-        defl.push(val, true);
+        if (v !== undefined) {
+            const val = fflate.strToU8(v.result),
+                defl = new fflate.AsyncZipDeflate(v.filename, { level: 9 });
+            zipFile.add(defl);
+            defl.push(val, true);
+        }
     });
     console.log('END');
     zipFile.end();
@@ -82,32 +105,25 @@ function processFiles() {
     results.innerHTML = '';
     let promises = [];
     for (var i = 0; i < inputFiles.files.length; i++) {
-        let file = inputFiles.files[i],
-            result = document.createElement('div'),
-            h2 = document.createElement('h2'),
-            pre = document.createElement('pre');
+        let file = inputFiles.files[i];
         console.log('Processing file: ', file.name);
-        h2.append(file.name);
-        result.append(h2, pre);
-        results.append(result);
         promises.push(
             file.text()
-                .then(txt => {
-                    let doc = domParser.parseFromString(txt, 'text/xml'),
-                        errCount = doc.getElementsByTagName('parsererror').length
-                    if (errCount !== 0) {
-                        result.classList.add('parsererror');
-                        return doc;
-                    }
-                    else
-                        return transform(doc);
+                .then(txt => {               
+                    return transform(txt);
                 })
                 .then(transformed => {
-                    pre.innerText = transformed;
+                    if (inputShowInPage.checked)
+                        showInPage(file.name, transformed);
                     return {
                         filename: file.name,
                         result: transformed
                     };
+                })
+                .catch(err => {
+                    console.log('ERROR: ', err);
+                    if (inputShowInPage.checked)
+                        showInPage(file.name, err);
                 })
         );
     }
