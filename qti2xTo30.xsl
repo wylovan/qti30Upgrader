@@ -19,9 +19,11 @@
 
         * Namespace transformation.
         * schema-location reference updates.
+        * Optional adds Schematron reference.  See param "addSchematronPi".
         * responseProcessing/@template updates.
         * element and attribute name "kabobization".
         * QTI 2.2's MathML 3 namespace-uri is transformed appropriately.
+        * QTI 2.2's SSML 1.1 namespace-uri is transformed appropriately.
         * Content of feedbackBlock, modalFeedback, rubricBlock and templateBlock is reordered and encapsulated
           in qti-content-body.
 
@@ -30,21 +32,29 @@
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema"
     xmlns:math="http://www.w3.org/2005/xpath-functions/math" xmlns:apip="http://www.imsglobal.org/xsd/apip/apipv1p0/imsapip_qtiv1p0"
     xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:mml3="http://www.w3.org/2010/Math/MathML" xmlns:imx="http://ets.org/imex"
-    exclude-result-prefixes="apip imx math mml mml3 xi xs" version="3.0">
+    xmlns:ssml="http://www.w3.org/2001/10/synthesis" xmlns:ssml11="http://www.w3.org/2010/10/synthesis"
+    exclude-result-prefixes="apip imx math mml mml3 ssml ssml11 xi xs" version="3.0">
+
+    <xsl:param name="addSchematronPi" as="xs:boolean" select="true()"/>
 
     <xsl:variable name="qti3NamespaceUri" select="'http://www.imsglobal.org/xsd/imsqtiasi_v3p0'"/>
     <xsl:variable name="qti3RptemplatesUri" select="'https://purl.imsglobal.org/spec/qti/v3p0/rptemplates/'"/>
     <xsl:variable name="mmlNamespaceUri" select="'http://www.w3.org/1998/Math/MathML'"/>
+    <xsl:variable name="ssmlNamespaceUri" select="'http://www.w3.org/2001/10/synthesis'"/>
 
-    <!-- Associate Schematron... -->
     <xsl:template match="/">
-        <xsl:processing-instruction name="xml-model">href="https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0_v1p0.xsd" type="application/xml" schematypens="http://purl.oclc.org/dsdl/schematron"</xsl:processing-instruction>
+        <xsl:if test="$addSchematronPi">
+            <!-- Associate Schematron... -->
+            <xsl:text>&#10;</xsl:text>
+            <xsl:processing-instruction name="xml-model">href="https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0_v1p0.xsd" type="application/xml" schematypens="http://purl.oclc.org/dsdl/schematron"</xsl:processing-instruction>
+        </xsl:if>
+        <xsl:text>&#10;</xsl:text>
         <xsl:apply-templates/>
     </xsl:template>
 
     <!-- Copy comments and processing-instructions... -->
-    <xsl:template match="comment() | processing-instruction()">
-        <xsl:copy/>
+    <xsl:template match="comment() | processing-instruction()[not(name() = 'xml-model' and matches(., 'schematypens=&quot;http://purl.oclc.org/dsdl/schematron&quot;'))]">
+        <xsl:copy/>        
     </xsl:template>
 
     <!-- Unidentified elements just get the namespace switched... -->
@@ -96,12 +106,19 @@
             <xsl:apply-templates/>
         </xsl:element>
     </xsl:template>
+    
+    <xsl:template match="ssml:* | ssml11:*">
+        <xsl:element name="{local-name()}" namespace="{$ssmlNamespaceUri}">
+            <xsl:copy-of select="@*"/>
+            <xsl:apply-templates/>
+        </xsl:element>
+    </xsl:template>
 
     <xsl:template match="*:responseProcessing/@template">
         <xsl:attribute name="{name()}" select="concat(replace(., '^.*/', $qti3RptemplatesUri), '.xml')"/>
     </xsl:template>
 
-    <xsl:function name="imx:qti-kabobify">
+    <xsl:function name="imx:qti-kabobify" as="xs:string">
         <xsl:param name="s" as="xs:string"/>
         <xsl:value-of select="concat('qti-', imx:kabobize($s, ''))"/>
     </xsl:function>
