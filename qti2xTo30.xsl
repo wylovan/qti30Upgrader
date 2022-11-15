@@ -100,6 +100,15 @@
         </xsl:element>
     </xsl:template>
 
+    <!-- Convert object elements with type image to images... -->
+    <xsl:template match="*:object[starts-with(@type, 'image')]">
+        <xsl:element name="img" namespace="{$qti3NamespaceUri}">
+            <xsl:attribute name="src" select="@data" />
+            <xsl:copy-of select="@*[name(.)!='data' and name(.)!='type']|node()"/>
+            <xsl:apply-templates select="node( )"/>
+        </xsl:element>
+    </xsl:template>
+
     <xsl:template match="mml:* | mml3:*">
         <xsl:element name="{local-name()}" namespace="{$mmlNamespaceUri}">
             <xsl:copy-of select="@*"/>
