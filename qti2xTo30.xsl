@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- 
-    
+<!--
+
     qti2xTo30.xsl - Transforms QTI 2.x content to QTI 3.0.
-    
+
     Created By:     Wyatt VanderStucken
                     Educational Testing Service
                     wvanderstucken@ets.org
-    
+
     Created Date:   2020-08-17-04:00
-    
+
     NOTES:
     This XSL transformation requires a XSL 3.0 capable processor and has been developed/tested using the Saxon-HE
     Java implementation version 9.9.1.7.
-    
+
     This XSL transformation is incomplete.  It only supports assessmentItem documents at this point, and does
     not purport to support these completely.  It is intended as a starting point for those who are venturing
     down this path.  The following features are implemented and simple items work reasonably well...
@@ -54,7 +54,7 @@
 
     <!-- Copy comments and processing-instructions... -->
     <xsl:template match="comment() | processing-instruction()[not(name() = 'xml-model' and matches(., 'schematypens=&quot;http://purl.oclc.org/dsdl/schematron&quot;'))]">
-        <xsl:copy/>        
+        <xsl:copy/>
     </xsl:template>
 
     <!-- Unidentified elements just get the namespace switched... -->
@@ -100,22 +100,13 @@
         </xsl:element>
     </xsl:template>
 
-    <!-- Convert object elements with type image to images... -->
-    <xsl:template match="*:object[starts-with(@type, 'image')]">
-      <xsl:element name="img" namespace="{$qti3NamespaceUri}">
-        <xsl:attribute name="src" select="@data" />
-        <xsl:attribute name="alt" select="string(.)" />
-        <xsl:copy-of select="@*[name() != 'data' and name() != 'type']"/>
-      </xsl:element>
-    </xsl:template>
-
     <xsl:template match="mml:* | mml3:*">
         <xsl:element name="{local-name()}" namespace="{$mmlNamespaceUri}">
             <xsl:copy-of select="@*"/>
             <xsl:apply-templates/>
         </xsl:element>
     </xsl:template>
-    
+
     <xsl:template match="ssml:* | ssml11:*">
         <xsl:element name="{local-name()}" namespace="{$ssmlNamespaceUri}">
             <xsl:copy-of select="@*"/>
@@ -147,5 +138,59 @@
             <xsl:value-of select="$a"/>
         </xsl:if>
     </xsl:function>
+
+    <!-- Custom @citolab processing -->
+
+    <!-- Convert object elements with type image to images... -->
+    <xsl:template match="*:object[starts-with(@type, 'image')]">
+      <xsl:element name="img" namespace="{$qti3NamespaceUri}">
+        <xsl:attribute name="src" select="@data" />
+        <xsl:attribute name="alt" select="string(.)" />
+        <xsl:copy-of select="@*[name() != 'data' and name() != 'type']"/>
+      </xsl:element>
+    </xsl:template>
+
+    <!-- Object elements with type video to video element... -->
+    <xsl:template match="*:object[starts-with(@type, 'video')]">
+        <xsl:element name="video" namespace="{$qti3NamespaceUri}">
+            <xsl:attribute name="src" select="@data" />
+            <xsl:copy-of select="@*[name(.)!='data' and name(.)!='type']|node()" />
+            <xsl:apply-templates select="node( )" />
+            <xsl:element name="source" namespace="{$qti3NamespaceUri}">
+              <xsl:attribute name="type" select="@type" />
+              <xsl:attribute name="src" select="@data" />
+            </xsl:element>
+        </xsl:element>
+    </xsl:template>
+
+    <!-- TAO: matchInteraction default as tabular data in QTI3-->
+    <!-- TAO: matchInteraction not has class attribute add it with qti-match-tabular in the name -->
+    <xsl:template match="*:matchInteraction[not(@class)]">
+        <xsl:element name="{imx:qti-kabobify(name())}" namespace="{$qti3NamespaceUri}">
+            <xsl:attribute name="class" select="'qti-match-tabular'" />
+            <xsl:apply-templates select="@* | node()" />
+        </xsl:element>
+    </xsl:template>
+
+    <!-- TAO: matchInteraction has class attribute add qti-match-tabular to existing class value -->
+    <xsl:template match="*:matchInteraction[@class]">
+        <xsl:element name="{imx:qti-kabobify(name())}" namespace="{$qti3NamespaceUri}">
+            <xsl:attribute name="class" select="concat('qti-match-tabular ', @class)" />
+            <xsl:apply-templates select="@*[name(.)!='class']" />
+            <xsl:apply-templates select="node()" />
+        </xsl:element>
+    </xsl:template>
+
+    <!-- TAO: convert tao grid-row to the qti default -->
+    <xsl:template match="@class[. = 'grid-row']">
+        <!-- @ matches on attributes, possible to restrict! -->
+        <xsl:attribute name="{name()}" select="'qti-layout-row'" />
+    </xsl:template>
+
+    <!-- TAO: convert tao col-layout to the qti default -->
+    <xsl:template match="@*[starts-with(., 'col-')]">
+        <xsl:attribute name="{name()}" namespace="{namespace-uri()}"
+            select="concat('qti-layout-', replace(., '-', ''))" />
+    </xsl:template>
 
 </xsl:stylesheet>
