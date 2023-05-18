@@ -102,11 +102,11 @@
 
     <!-- Convert object elements with type image to images... -->
     <xsl:template match="*:object[starts-with(@type, 'image')]">
-        <xsl:element name="img" namespace="{$qti3NamespaceUri}">
-            <xsl:attribute name="src" select="@data" />
-            <xsl:copy-of select="@*[name(.)!='data' and name(.)!='type']|node()"/>
-            <xsl:apply-templates select="node( )"/>
-        </xsl:element>
+      <xsl:element name="img" namespace="{$qti3NamespaceUri}">
+        <xsl:attribute name="src" select="@data" />
+        <xsl:attribute name="alt" select="string(.)" />
+        <xsl:copy-of select="@*[name() != 'data' and name() != 'type']"/>
+      </xsl:element>
     </xsl:template>
 
     <xsl:template match="mml:* | mml3:*">
