@@ -4,7 +4,6 @@
   "license": "Apache-2.0",
   "version": "1.0.0",
   "description": "an XSL upgrader",
-  "main": "index.js",
   "bugs": {
     "url": "https://github.com/Citolab/qti30Upgrader/issues"
   },
@@ -21,8 +20,5 @@
     "convert",
     "1edtech",
     "ims"
-  ],
-  "dependencies": {
-    "saxon-js": "^2.6.0"
-  }
+  ]
 }
