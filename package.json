@@ -5,15 +5,15 @@
   "version": "1.0.0",
   "description": "an XSL upgrader",
   "bugs": {
-    "url": "https://github.com/Citolab/qti30Upgrader/issues"
+    "url": "https://github.com/wylovan/qti30Upgrader/issues"
   },
-  "homepage": "https://github.com/Citolab/qti30Upgrader#readme",
+  "homepage": "https://github.com/wylovan/qti30Upgrader",
   "scripts": {
-    "xslt3": "xslt3 -xsl:qti2xTo30.xsl -export:qti2xTo30.sef.json"
+    "xslt3": "xslt3 -xsl:qti2xTo30.xsl -export:qti2xTo30.sef.json -nogo"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Citolab/qti30Upgrader.git"
+    "url": "git+https://github.com/wylovan/qti30Upgrader.git"
   },
   "keywords": [
     "qti",
