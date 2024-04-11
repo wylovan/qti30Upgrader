@@ -1,0 +1,28 @@
+{
+  "name": "qti30upgrader",
+  "author": "wylovan",
+  "license": "Apache-2.0",
+  "version": "1.0.0",
+  "description": "an XSL upgrader",
+  "bugs": {
+    "url": "https://github.com/wylovan/qti30Upgrader/issues"
+  },
+  "homepage": "https://github.com/wylovan/qti30Upgrader",
+  "scripts": {
+    "xslt3": "xslt3 -xsl:qti2xTo30.xsl -export:qti2xTo30.sef.json -nogo"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wylovan/qti30Upgrader.git"
+  },
+  "keywords": [
+    "qti",
+    "convert",
+    "1edtech",
+    "ims"
+  ],
+  "dependencies": {
+    "saxon-js": "^2.6.0",
+    "xslt3": "^2.6.0"
+  }
+}
